@@ -40,7 +40,7 @@ These instructions will help you set up the project locally and run it manually.
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/darrellathaya/phone-predictor.git
+   git clone https://github.com/Viggofudail/mlops-phone-price.git
    cd phone-predictor
 
 2. Install missing dependencies
@@ -51,17 +51,17 @@ These instructions will help you set up the project locally and run it manually.
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-1. Running the web app locally
-   ```sh
-   uvicorn app.main:app --reload
-   ```
-
-2. Train the model locally
+1. Train the model locally
    ```sh
    python src/model.py
    ```
 
-3. Run via Github Actions
+2. Running the web app locally
+   ```sh
+   uvicorn app.main:app --reload
+   ```
+
+3. Run via Railway
    ```sh
    a. Add new data into train.csv
 
