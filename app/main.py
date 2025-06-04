@@ -23,10 +23,6 @@ resolution_list = meta.get("resolution_list", ["720p", "1080p", "2k+"])
 
 
 def chipset_score(chipset: str) -> int:
-    return train_model_chipset_score(chipset)
-
-
-def train_model_chipset_score(chipset: str) -> int:
     chipset = chipset.lower()
     if 'snapdragon 8 gen 3' in chipset:
         return 850
@@ -74,7 +70,8 @@ def train_model_chipset_score(chipset: str) -> int:
         return 400
 
 
-def resolution_to_value(res_str):
+def resolution_to_value(res_str: str) -> int:
+    # Mapping string resolution like "720p", "1080p", "2k+" to integer category
     if res_str == "720p":
         return 720
     elif res_str == "1080p":
@@ -82,6 +79,7 @@ def resolution_to_value(res_str):
     elif res_str == "2k+":
         return 2000
     else:
+        # Default fallback (sama seperti pelatihan)
         return 720
 
 
@@ -120,7 +118,12 @@ def form_post(
         chipset_val = chipset_score(chipset)
 
         input_data = np.array([[ram, storage, display_res_value, chipset_val]])
+        
+        print(f"DEBUG: Input data to model: {input_data}")
+
         prediction = model.predict(input_data)[0]
+
+        print(f"DEBUG: Raw prediction from model: {prediction}")
 
         label_map = {
             0: "Low Cost",

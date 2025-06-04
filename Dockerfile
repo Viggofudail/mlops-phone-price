@@ -1,17 +1,20 @@
-# Gunakan image dasar python ringan
-FROM python:3.11-slim
+# Gunakan official Python slim image
+FROM python:3.10-slim
 
-# Set direktori kerja di container
+# Set working directory di dalam container
 WORKDIR /app
 
-# Salin semua isi project ke dalam container
-COPY . /app
+# Copy requirements.txt dulu supaya bisa install dependencies
+COPY requirements.txt .
 
-# Install dependencies dari requirements.txt
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Ekspose port 8000 agar dapat diakses dari luar container
+# Copy semua file aplikasi ke container
+COPY . .
+
+# Expose port yang akan dipakai (FastAPI default 8000)
 EXPOSE 8000
 
-# Jalankan FastAPI dengan uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Jalankan FastAPI dengan Uvicorn
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
