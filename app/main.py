@@ -10,25 +10,80 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
 MODEL_PATH = os.path.join("models", "price_range_model.pkl")
-ENCODER_PATH = os.path.join("models", "chipset_encoder.pkl")
 ACCURACY_PATH = os.path.join("models", "accuracy.txt")
 META_PATH = os.path.join("models", "meta.json")
 
 model = joblib.load(MODEL_PATH)
-chipset_encoder = joblib.load(ENCODER_PATH)
 
-# Load meta dropdown choices
 with open(META_PATH, "r") as f:
     meta = json.load(f)
-chipset_list = meta.get("chipset_list", [])
-resolution_list = meta.get("resolution_list", [])
 
-def convert_resolution(res_str):
-    try:
-        w, h = res_str.lower().split('x')
-        return int(w) * int(h)
-    except:
-        return 0
+chipset_list = meta.get("chipset_list", [])
+resolution_list = meta.get("resolution_list", ["720p", "1080p", "2k+"])
+
+
+def chipset_score(chipset: str) -> int:
+    return train_model_chipset_score(chipset)
+
+
+def train_model_chipset_score(chipset: str) -> int:
+    chipset = chipset.lower()
+    if 'snapdragon 8 gen 3' in chipset:
+        return 850
+    elif 'snapdragon 8 gen 2' in chipset:
+        return 820
+    elif 'snapdragon 888' in chipset:
+        return 800
+    elif 'snapdragon 855' in chipset:
+        return 730
+    elif 'snapdragon 778' in chipset:
+        return 720
+    elif 'snapdragon 765' in chipset:
+        return 690
+    elif 'helio g99' in chipset:
+        return 650
+    elif 'tensor g4' in chipset:
+        return 830
+    elif 'tensor g3' in chipset:
+        return 800
+    elif 'tensor g2' in chipset:
+        return 780
+    elif 'tensor' in chipset:
+        return 750
+    elif 'apple a18' in chipset:
+        return 870
+    elif 'apple a17' in chipset:
+        return 850
+    elif 'apple a16' in chipset:
+        return 830
+    elif 'apple a15' in chipset:
+        return 800
+    elif 'apple a14' in chipset:
+        return 770
+    elif 'apple a13' in chipset:
+        return 740
+    elif 'apple a12' in chipset:
+        return 720
+    elif 'apple a11' in chipset:
+        return 690
+    elif 'kirin' in chipset:
+        return 500
+    elif 'exynos' in chipset:
+        return 650
+    else:
+        return 400
+
+
+def resolution_to_value(res_str):
+    if res_str == "720p":
+        return 720
+    elif res_str == "1080p":
+        return 1080
+    elif res_str == "2k+":
+        return 2000
+    else:
+        return 720
+
 
 @app.get("/", response_class=HTMLResponse)
 def form_get(request: Request):
@@ -44,24 +99,29 @@ def form_get(request: Request):
         "error": None,
         "accuracy": acc,
         "chipset_list": chipset_list,
-        "resolution_list": resolution_list
+        "resolution_list": resolution_list,
+        "selected_chipset": None,
+        "selected_resolution": None,
+        "ram": None,
+        "storage": None
     })
+
 
 @app.post("/", response_class=HTMLResponse)
 def form_post(
     request: Request,
     ram: int = Form(...),
     storage: int = Form(...),
-    display_resolution: str = Form(...),  # ambil string dari dropdown
+    display_resolution: str = Form(...),
     chipset: str = Form(...)
 ):
     try:
-        display_res_value = convert_resolution(display_resolution)
-        chipset_encoded = chipset_encoder.transform([chipset])[0]
+        display_res_value = resolution_to_value(display_resolution)
+        chipset_val = chipset_score(chipset)
 
-        input_data = np.array([[ram, storage, display_res_value, chipset_encoded]])
-
+        input_data = np.array([[ram, storage, display_res_value, chipset_val]])
         prediction = model.predict(input_data)[0]
+
         label_map = {
             0: "Low Cost",
             1: "Medium Cost",
@@ -74,12 +134,11 @@ def form_post(
 
         return templates.TemplateResponse("index.html", {
             "request": request,
-            "prediction": label_map[prediction],
+            "prediction": label_map.get(prediction, "Unknown"),
             "error": None,
             "accuracy": acc,
             "chipset_list": chipset_list,
             "resolution_list": resolution_list,
-            # untuk tetap menampilkan pilihan yang dipilih di form
             "selected_chipset": chipset,
             "selected_resolution": display_resolution,
             "ram": ram,

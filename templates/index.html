@@ -9,25 +9,18 @@
 <body>
 <div class="container mt-5">
   <h2 class="mb-4 text-center">📱 Phone Price Prediction</h2>
-
   <form method="post">
     <div class="row g-3">
-
-      <!-- RAM -->
       <div class="col-md-6">
         <label for="ram" class="form-label">RAM (MB)</label>
         <input type="range" class="form-range" id="ramRange" name="ram" min="512" max="24000" step="128" value="{{ ram or 2048 }}" />
         <input type="number" class="form-control mt-2" id="ramInput" value="{{ ram or 2048 }}" required />
       </div>
-
-      <!-- Storage -->
       <div class="col-md-6">
         <label for="storage" class="form-label">Storage (GB)</label>
         <input type="range" class="form-range" id="storageRange" name="storage" min="8" max="1000" step="8" value="{{ storage or 128 }}" />
         <input type="number" class="form-control mt-2" id="storageInput" value="{{ storage or 128 }}" required />
       </div>
-
-      <!-- Display Resolution -->
       <div class="col-md-6">
         <label for="display_resolution" class="form-label">Display Resolution</label>
         <select class="form-select" name="display_resolution" required>
@@ -37,69 +30,41 @@
           {% endfor %}
         </select>
       </div>
-
-      <!-- Chipset -->
       <div class="col-md-6">
         <label for="chipset" class="form-label">Chipset</label>
         <select class="form-select" name="chipset" required>
           <option value="" disabled {% if not selected_chipset %}selected{% endif %}>-- Pilih Chipset --</option>
-          {% for chip in chipset_list %}
-          <option value="{{ chip }}" {% if chip == selected_chipset %}selected{% endif %}>{{ chip }}</option>
+          {% for c in chipset_list %}
+          <option value="{{ c }}" {% if c == selected_chipset %}selected{% endif %}>{{ c }}</option>
           {% endfor %}
         </select>
       </div>
-
     </div>
-
-    <div class="d-grid gap-2 mt-4">
+    <div class="mt-4 text-center">
       <button type="submit" class="btn btn-primary">Prediksi Harga</button>
     </div>
   </form>
-
-  {% if prediction is not none %}
+  {% if prediction %}
   <div class="alert alert-success mt-4 text-center">
-    Hasil Prediksi: <strong>{{ prediction }}</strong>
+    <strong>Prediksi:</strong> {{ prediction }}<br>
+    <strong>Akurasi Model:</strong> {{ accuracy }}%
   </div>
-  {% endif %}
-
-  {% if error is not none %}
+  {% elif error %}
   <div class="alert alert-danger mt-4 text-center">
-    Error: <strong>{{ error }}</strong>
-  </div>
-  {% endif %}
-
-  {% if accuracy is not none %}
-  <div class="alert alert-info mt-4 text-center">
-    Akurasi Model: <strong>{{ accuracy }}%</strong>
+    <strong>Error:</strong> {{ error }}
   </div>
   {% endif %}
 </div>
-
 <script>
-  // RAM sync slider & input number
-  const ramRange = document.getElementById('ramRange');
-  const ramInput = document.getElementById('ramInput');
-  ramRange.addEventListener('input', () => ramInput.value = ramRange.value);
-  ramInput.addEventListener('input', () => {
-    let val = parseInt(ramInput.value);
-    if (val < 512) val = 512;
-    if (val > 24000) val = 24000;
-    ramInput.value = val;
-    ramRange.value = val;
-  });
+  const ramRange = document.getElementById("ramRange");
+  const ramInput = document.getElementById("ramInput");
+  ramRange.addEventListener("input", () => ramInput.value = ramRange.value);
+  ramInput.addEventListener("input", () => ramRange.value = ramInput.value);
 
-  // Storage sync slider & input number
-  const storageRange = document.getElementById('storageRange');
-  const storageInput = document.getElementById('storageInput');
-  storageRange.addEventListener('input', () => storageInput.value = storageRange.value);
-  storageInput.addEventListener('input', () => {
-    let val = parseInt(storageInput.value);
-    if (val < 8) val = 8;
-    if (val > 1000) val = 1000;
-    storageInput.value = val;
-    storageRange.value = val;
-  });
+  const storageRange = document.getElementById("storageRange");
+  const storageInput = document.getElementById("storageInput");
+  storageRange.addEventListener("input", () => storageInput.value = storageRange.value);
+  storageInput.addEventListener("input", () => storageRange.value = storageInput.value);
 </script>
-
 </body>
 </html>

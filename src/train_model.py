@@ -7,31 +7,87 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score
-from sklearn.preprocessing import LabelEncoder
 
 DATA_PATH = os.path.join("data", "raw", "train.csv")
 MODEL_PATH = os.path.join("models", "price_range_model.pkl")
-ENCODER_PATH = os.path.join("models", "chipset_encoder.pkl")
 ACCURACY_PATH = os.path.join("models", "accuracy.txt")
-META_PATH = os.path.join("models", "meta.json")  # simpan pilihan dropdown
+META_PATH = os.path.join("models", "meta.json")
+
+def chipset_score(chipset: str) -> int:
+    chipset = chipset.lower()
+    if 'snapdragon 8 gen 3' in chipset:
+        return 850
+    elif 'snapdragon 8 gen 2' in chipset:
+        return 820
+    elif 'snapdragon 888' in chipset:
+        return 800
+    elif 'snapdragon 855' in chipset:
+        return 730
+    elif 'snapdragon 778' in chipset:
+        return 720
+    elif 'snapdragon 765' in chipset:
+        return 690
+    elif 'helio g99' in chipset:
+        return 650
+    elif 'tensor g4' in chipset:
+        return 830
+    elif 'tensor g3' in chipset:
+        return 800
+    elif 'tensor g2' in chipset:
+        return 780
+    elif 'tensor' in chipset:
+        return 750
+    elif 'apple a18' in chipset:
+        return 870
+    elif 'apple a17' in chipset:
+        return 850
+    elif 'apple a16' in chipset:
+        return 830
+    elif 'apple a15' in chipset:
+        return 800
+    elif 'apple a14' in chipset:
+        return 770
+    elif 'apple a13' in chipset:
+        return 740
+    elif 'apple a12' in chipset:
+        return 720
+    elif 'apple a11' in chipset:
+        return 690
+    elif 'kirin' in chipset:
+        return 500
+    elif 'exynos' in chipset:
+        return 650
+    else:
+        return 400
+
+def resolution_category(res_str):
+    try:
+        parts = res_str.lower().replace(" ", "").split('x')
+        width = int(parts[0])
+        if width <= 720:
+            return 720
+        elif width <= 1080:
+            return 1080
+        else:
+            return 2000
+    except:
+        return 720
 
 def train():
-    df = pd.read_csv(DATA_PATH)
+    os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
 
-    def convert_resolution(res_str):
-        try:
-            w, h = res_str.lower().split('x')
-            return int(w) * int(h)
-        except:
-            return 0
-    df['display_resolution'] = df['display_resolution'].apply(convert_resolution)
+    try:
+        df = pd.read_csv(DATA_PATH)
+    except Exception as e:
+        print(f"Error loading data: {e}")
+        return
 
-    features = ['ram', 'storage', 'display_resolution', 'chipset']
-    X = df[features]
+    df['display_resolution_cat'] = df['display_resolution'].apply(resolution_category)
+    df['chipset_score'] = df['chipset'].apply(chipset_score)
+
+    features = ['ram', 'storage', 'display_resolution_cat', 'chipset_score']
+    X = df[features].copy()
     y = df['price_range']
-
-    le = LabelEncoder()
-    X['chipset'] = le.fit_transform(X['chipset'])
 
     X_train, X_val, y_train, y_val = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
@@ -51,16 +107,12 @@ def train():
     print(f"Accuracy: {acc:.4f}")
 
     joblib.dump(pipeline, MODEL_PATH)
-    joblib.dump(le, ENCODER_PATH)
 
-    # Simpan akurasi
     with open(ACCURACY_PATH, "w") as f:
         f.write(str(acc))
 
-    # Simpan pilihan dropdown chipset dan display_resolution (yang asli string sebelum di convert)
-    raw_df = pd.read_csv(DATA_PATH)
-    chipset_list = sorted(raw_df['chipset'].dropna().unique().tolist())
-    resolution_list = sorted(raw_df['display_resolution'].dropna().unique().tolist())
+    chipset_list = sorted(df['chipset'].dropna().unique().tolist())
+    resolution_list = ["720p", "1080p", "2k+"]
 
     meta = {
         "chipset_list": chipset_list,
@@ -70,7 +122,7 @@ def train():
     with open(META_PATH, "w") as f:
         json.dump(meta, f)
 
-    print("Model, encoder, akurasi, dan meta (pilihan dropdown) berhasil disimpan.")
+    print("Model, akurasi, dan meta (dropdown) berhasil disimpan.")
 
 if __name__ == "__main__":
     train()
