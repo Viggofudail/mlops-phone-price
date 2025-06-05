@@ -28,9 +28,9 @@ jobs:
       - name: Start MLflow Tracking Server (Docker)
         run: |
           docker run -d -p 5000:5000 \
-          -v ${{ github.workspace }}/mlruns:/mlflow/mlruns \
+          -v ${{ github.workspace }}/mlruns:/mlruns \
           ghcr.io/mlflow/mlflow:v2.12.1 mlflow server \
-          --backend-store-uri /mlflow/mlruns --host 0.0.0.0 --port 5000
+          --backend-store-uri /mlruns --host 0.0.0.0 --port 5000
 
       - name: Run training script
         run: python src/train_model.py
