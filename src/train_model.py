@@ -2,12 +2,13 @@ import pandas as pd
 import os
 import joblib
 import json
-import mlflow
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score
+import mlflow
+import mlflow.sklearn
 
 DATA_PATH = os.path.join("data", "raw", "train.csv")
 MODEL_PATH = os.path.join("models", "price_range_model.pkl")
@@ -99,40 +100,54 @@ def train():
         ('classifier', RandomForestClassifier(n_estimators=100, random_state=42))
     ])
 
-    # Ganti ini dengan URL MLflow server Railway kamu
-    mlflow.set_tracking_uri("http://localhost:5000")
+    pipeline.fit(X_train, y_train)
+
+    y_pred = pipeline.predict(X_val)
+    acc = accuracy_score(y_val, y_pred)
+    report = classification_report(y_val, y_pred)
+    print("=== Classification Report ===\n", report)
+    print(f"Accuracy: {acc:.4f}")
+
+    # --- MLflow integration ---
+
+    # Set MLflow tracking URI (ganti sesuai MLflow server kamu)
+    tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
+    mlflow.set_tracking_uri(tracking_uri)
+
+    experiment_name = "phone_price_classification"
+
+    # Cek dan buat experiment kalau belum ada
+    experiment = mlflow.get_experiment_by_name(experiment_name)
+    if experiment is None:
+        mlflow.create_experiment(experiment_name)
+        experiment = mlflow.get_experiment_by_name(experiment_name)
+
+    mlflow.set_experiment(experiment_name)
 
     with mlflow.start_run():
-        pipeline.fit(X_train, y_train)
-
-        y_pred = pipeline.predict(X_val)
-        acc = accuracy_score(y_val, y_pred)
-        report = classification_report(y_val, y_pred)
-        print("=== Classification Report ===\n", report)
-        print(f"Accuracy: {acc:.4f}")
-
-        # Save model lokal
-        joblib.dump(pipeline, MODEL_PATH)
-
-        # Log model & metric ke MLflow server
+        mlflow.log_param("n_estimators", 100)
         mlflow.sklearn.log_model(pipeline, "model")
         mlflow.log_metric("accuracy", acc)
 
-        with open(ACCURACY_PATH, "w") as f:
-            f.write(str(acc))
+    # --- End MLflow integration ---
 
-        chipset_list = sorted(df['chipset'].dropna().unique().tolist())
-        resolution_list = ["720p", "1080p", "2k+"]
+    joblib.dump(pipeline, MODEL_PATH)
 
-        meta = {
-            "chipset_list": chipset_list,
-            "resolution_list": resolution_list
-        }
+    with open(ACCURACY_PATH, "w") as f:
+        f.write(str(acc))
 
-        with open(META_PATH, "w") as f:
-            json.dump(meta, f)
+    chipset_list = sorted(df['chipset'].dropna().unique().tolist())
+    resolution_list = ["720p", "1080p", "2k+"]
 
-        print("Model, akurasi, dan meta (dropdown) berhasil disimpan.")
+    meta = {
+        "chipset_list": chipset_list,
+        "resolution_list": resolution_list
+    }
+
+    with open(META_PATH, "w") as f:
+        json.dump(meta, f)
+
+    print("Model, akurasi, dan meta (dropdown) berhasil disimpan.")
 
 if __name__ == "__main__":
     train()
