@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Jalankan training model (simpan model ke models/)
-RUN python src/train_models.py
+RUN python src/train_model.py
 
 # Expose port FastAPI
 EXPOSE 8000
