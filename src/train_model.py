@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import joblib
 import json
+import mlflow
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -98,31 +99,40 @@ def train():
         ('classifier', RandomForestClassifier(n_estimators=100, random_state=42))
     ])
 
-    pipeline.fit(X_train, y_train)
+    # Ganti ini dengan URL MLflow server Railway kamu
+    mlflow.set_tracking_uri("https://your-railway-mlflow-url.up.railway.app")
 
-    y_pred = pipeline.predict(X_val)
-    acc = accuracy_score(y_val, y_pred)
-    report = classification_report(y_val, y_pred)
-    print("=== Classification Report ===\n", report)
-    print(f"Accuracy: {acc:.4f}")
+    with mlflow.start_run():
+        pipeline.fit(X_train, y_train)
 
-    joblib.dump(pipeline, MODEL_PATH)
+        y_pred = pipeline.predict(X_val)
+        acc = accuracy_score(y_val, y_pred)
+        report = classification_report(y_val, y_pred)
+        print("=== Classification Report ===\n", report)
+        print(f"Accuracy: {acc:.4f}")
 
-    with open(ACCURACY_PATH, "w") as f:
-        f.write(str(acc))
+        # Save model lokal
+        joblib.dump(pipeline, MODEL_PATH)
 
-    chipset_list = sorted(df['chipset'].dropna().unique().tolist())
-    resolution_list = ["720p", "1080p", "2k+"]
+        # Log model & metric ke MLflow server
+        mlflow.sklearn.log_model(pipeline, "model")
+        mlflow.log_metric("accuracy", acc)
 
-    meta = {
-        "chipset_list": chipset_list,
-        "resolution_list": resolution_list
-    }
+        with open(ACCURACY_PATH, "w") as f:
+            f.write(str(acc))
 
-    with open(META_PATH, "w") as f:
-        json.dump(meta, f)
+        chipset_list = sorted(df['chipset'].dropna().unique().tolist())
+        resolution_list = ["720p", "1080p", "2k+"]
 
-    print("Model, akurasi, dan meta (dropdown) berhasil disimpan.")
+        meta = {
+            "chipset_list": chipset_list,
+            "resolution_list": resolution_list
+        }
+
+        with open(META_PATH, "w") as f:
+            json.dump(meta, f)
+
+        print("Model, akurasi, dan meta (dropdown) berhasil disimpan.")
 
 if __name__ == "__main__":
     train()

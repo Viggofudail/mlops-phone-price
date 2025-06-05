@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
-          token: ${{ secrets.RAILWAY_SECRET }}  
+          token: ${{ secrets.RAILWAY_SECRET }}
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -24,6 +24,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+      - name: Start MLflow Tracking Server (Docker)
+        run: |
+          docker run -d -p 5000:5000 \
+          -v ${{ github.workspace }}/mlruns:/mlflow/mlruns \
+          ghcr.io/mlflow/mlflow:v2.12.1 mlflow server \
+          --backend-store-uri /mlflow/mlruns --host 0.0.0.0 --port 5000
 
       - name: Run training script
         run: python src/train_model.py
