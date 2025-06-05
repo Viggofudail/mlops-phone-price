@@ -100,7 +100,7 @@ def train():
     ])
 
     # Ganti ini dengan URL MLflow server Railway kamu
-    mlflow.set_tracking_uri("https://your-railway-mlflow-url.up.railway.app")
+    mlflow.set_tracking_uri("http://localhost:5000")
 
     with mlflow.start_run():
         pipeline.fit(X_train, y_train)
