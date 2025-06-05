@@ -1,67 +1,42 @@
-import pandas as pd
 import os
-import joblib
 import json
+import joblib
+import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score
+
 import mlflow
 import mlflow.sklearn
+from mlflow.models.signature import infer_signature
 
+# File paths
 DATA_PATH = os.path.join("data", "raw", "train.csv")
 MODEL_PATH = os.path.join("models", "price_range_model.pkl")
 ACCURACY_PATH = os.path.join("models", "accuracy.txt")
 META_PATH = os.path.join("models", "meta.json")
 
+
+# Fungsi scoring chipset
 def chipset_score(chipset: str) -> int:
     chipset = chipset.lower()
-    if 'snapdragon 8 gen 3' in chipset:
-        return 850
-    elif 'snapdragon 8 gen 2' in chipset:
-        return 820
-    elif 'snapdragon 888' in chipset:
-        return 800
-    elif 'snapdragon 855' in chipset:
-        return 730
-    elif 'snapdragon 778' in chipset:
-        return 720
-    elif 'snapdragon 765' in chipset:
-        return 690
-    elif 'helio g99' in chipset:
-        return 650
-    elif 'tensor g4' in chipset:
-        return 830
-    elif 'tensor g3' in chipset:
-        return 800
-    elif 'tensor g2' in chipset:
-        return 780
-    elif 'tensor' in chipset:
-        return 750
-    elif 'apple a18' in chipset:
-        return 870
-    elif 'apple a17' in chipset:
-        return 850
-    elif 'apple a16' in chipset:
-        return 830
-    elif 'apple a15' in chipset:
-        return 800
-    elif 'apple a14' in chipset:
-        return 770
-    elif 'apple a13' in chipset:
-        return 740
-    elif 'apple a12' in chipset:
-        return 720
-    elif 'apple a11' in chipset:
-        return 690
-    elif 'kirin' in chipset:
-        return 500
-    elif 'exynos' in chipset:
-        return 650
-    else:
-        return 400
+    mapping = {
+        "snapdragon 8 gen 3": 850, "snapdragon 8 gen 2": 820, "snapdragon 888": 800,
+        "snapdragon 855": 730, "snapdragon 778": 720, "snapdragon 765": 690,
+        "helio g99": 650, "tensor g4": 830, "tensor g3": 800, "tensor g2": 780,
+        "tensor": 750, "apple a18": 870, "apple a17": 850, "apple a16": 830,
+        "apple a15": 800, "apple a14": 770, "apple a13": 740, "apple a12": 720,
+        "apple a11": 690, "kirin": 500, "exynos": 650
+    }
+    for key in mapping:
+        if key in chipset:
+            return mapping[key]
+    return 400
 
+
+# Fungsi kategori resolusi
 def resolution_category(res_str):
     try:
         parts = res_str.lower().replace(" ", "").split('x')
@@ -74,6 +49,7 @@ def resolution_category(res_str):
             return 2000
     except:
         return 720
+
 
 def train():
     os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
@@ -88,7 +64,7 @@ def train():
     df['chipset_score'] = df['chipset'].apply(chipset_score)
 
     features = ['ram', 'storage', 'display_resolution_cat', 'chipset_score']
-    X = df[features].copy()
+    X = df[features]
     y = df['price_range']
 
     X_train, X_val, y_train, y_val = train_test_split(
@@ -108,46 +84,51 @@ def train():
     print("=== Classification Report ===\n", report)
     print(f"Accuracy: {acc:.4f}")
 
-    # --- MLflow integration ---
-
-    # Set MLflow tracking URI (ganti sesuai MLflow server kamu)
+    # ----- MLflow Logging -----
     tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
     mlflow.set_tracking_uri(tracking_uri)
 
     experiment_name = "phone_price_classification"
-
-    # Cek dan buat experiment kalau belum ada
     experiment = mlflow.get_experiment_by_name(experiment_name)
     if experiment is None:
         mlflow.create_experiment(experiment_name)
-        experiment = mlflow.get_experiment_by_name(experiment_name)
-
     mlflow.set_experiment(experiment_name)
 
     with mlflow.start_run():
-        mlflow.log_param("n_estimators", 100)
-        mlflow.sklearn.log_model(pipeline, "model")
+        mlflow.log_params({
+            "model_type": "RandomForest",
+            "n_estimators": 100,
+            "features": ", ".join(features)
+        })
         mlflow.log_metric("accuracy", acc)
 
-    # --- End MLflow integration ---
+        # Log model with signature and input_example
+        input_example = X_train.iloc[:1]
+        signature = infer_signature(X_train, pipeline.predict(X_train))
+        mlflow.sklearn.log_model(
+            sk_model=pipeline,
+            artifact_path="model",
+            input_example=input_example,
+            signature=signature
+        )
+    # ----------------------------
 
+    # Simpan model lokal
     joblib.dump(pipeline, MODEL_PATH)
 
+    # Simpan akurasi
     with open(ACCURACY_PATH, "w") as f:
         f.write(str(acc))
 
-    chipset_list = sorted(df['chipset'].dropna().unique().tolist())
-    resolution_list = ["720p", "1080p", "2k+"]
-
+    # Simpan metadata
     meta = {
-        "chipset_list": chipset_list,
-        "resolution_list": resolution_list
+        "chipset_list": sorted(df['chipset'].dropna().unique().tolist()),
+        "resolution_list": ["720p", "1080p", "2k+"]
     }
-
     with open(META_PATH, "w") as f:
         json.dump(meta, f)
 
-    print("Model, akurasi, dan meta (dropdown) berhasil disimpan.")
+    print("Model, akurasi, dan metadata berhasil disimpan.")
 
 if __name__ == "__main__":
     train()
