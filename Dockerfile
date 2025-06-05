@@ -6,13 +6,12 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy semua file ke container
+# Copy aplikasi FastAPI + kode MLflow jika ada
 COPY . .
 
+# Expose port FastAPI dan MLflow server (default 5000)
+EXPOSE 8000 5000
 
-
-# Expose port FastAPI
-EXPOSE 8000
-
-# Jalankan aplikasi FastAPI
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Jalankan MLflow server di background, lalu jalankan FastAPI di foreground
+CMD mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns --host 0.0.0.0 --port 5000 & \
+    uvicorn app.main:app --host 0.0.0.0 --port 8000
