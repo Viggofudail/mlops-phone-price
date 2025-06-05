@@ -1,45 +1,40 @@
-name: MLOps Pipeline
+name: CI Pipeline for test-aja branch
 
 on:
   push:
-    branches: [test-aja]
-  pull_request:
-    branches: [test-aja]
+    branches:
+      - test-aja
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
-    env:
-      REPO_URL: https://github.com/Viggofudail/mlops-phone-price.git
-
     steps:
-    - name: Checkout this repository
-      uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.RAILWAY_SECRET }}  
 
-    - name: Clone private repo (mlops-phone-price)
-      env:
-        TOKEN: ${{ secrets.RAILWAY_SECRET }}
-      run: |
-        git clone https://${TOKEN}@github.com/Viggofudail/mlops-phone-price.git
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Run training script
+        run: python src/train_model.py
 
-    - name: Train model
-      run: python train_model.py
-
-    - name: Run FastAPI with Uvicorn (for test)
-      run: |
-        nohup uvicorn main:app --host 0.0.0.0 --port 8000 &
-        sleep 10
-        curl -f http://localhost:8000 || exit 1
-
-    # Opsional: Deploy step here
+      - name: Commit and push model files
+        env:
+          GH_TOKEN: ${{ secrets.RAILWAY_SECRET }}
+        run: |
+          git config --global user.name "Viggofudail"
+          git config --global user.email "Viggofudail@gmail.com"
+          git remote set-url origin https://${GH_TOKEN}@github.com/Viggofudail/mlops-phone-price.git
+          git add models/
+          git commit -m "Add trained model files [skip ci]" || echo "No changes to commit"
+          git push origin test-aja
