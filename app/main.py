@@ -78,7 +78,14 @@ def chipset_score(chipset: str) -> int:
         return 400
 
 def resolution_to_value(res_str: str) -> int:
-    return {"720p": 720, "1080p": 1080, "2k+": 2000}.get(res_str, 720)
+    if res_str == "720p":
+        return 720
+    elif res_str == "1080p":
+        return 1080
+    elif res_str == "2k+":
+        return 2000
+    else:
+        return 720
 
 @app.get("/", response_class=HTMLResponse)
 def form_get(request: Request):
