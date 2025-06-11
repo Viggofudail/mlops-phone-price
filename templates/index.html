@@ -16,11 +16,13 @@
           <label for="ram" class="form-label">RAM (MB)</label>
           <input type="range" class="form-range" id="ramRange" name="ram" min="512" max="24000" step="128" value="{{ ram or 2048 }}" />
           <input type="number" class="form-control mt-2" id="ramInput" value="{{ ram or 2048 }}" required />
+          <div class="form-text">Geser atau ketik jumlah RAM.</div>
         </div>
         <div class="col-md-6">
           <label for="storage" class="form-label">Storage (GB)</label>
           <input type="range" class="form-range" id="storageRange" name="storage" min="8" max="1000" step="8" value="{{ storage or 128 }}" />
           <input type="number" class="form-control mt-2" id="storageInput" value="{{ storage or 128 }}" required />
+          <div class="form-text">Geser atau ketik jumlah penyimpanan.</div>
         </div>
         <div class="col-md-6">
           <label for="display_resolution" class="form-label">Display Resolution</label>
@@ -30,6 +32,7 @@
             <option value="{{ res }}" {% if res == selected_resolution %}selected{% endif %}>{{ res }}</option>
             {% endfor %}
           </select>
+          <div class="form-text">Pilih resolusi layar dari daftar.</div>
         </div>
         <div class="col-md-6">
           <label for="chipset" class="form-label">Chipset</label>
@@ -39,6 +42,7 @@
             <option value="{{ c }}" {% if c == selected_chipset %}selected{% endif %}>{{ c }}</option>
             {% endfor %}
           </select>
+          <div class="form-text">Pilih chipset dari daftar.</div>
         </div>
       </div>
       <div class="mt-4 text-center">
