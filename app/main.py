@@ -8,8 +8,12 @@ import numpy as np
 import json
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="templates/static"), name="static")
-templates = Jinja2Templates(directory="templates")
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="app/templates/static"), name="static")
+
+# Templates path
+templates = Jinja2Templates(directory="app/templates")
 
 # Paths
 MODEL_PATH = os.path.join("models", "price_range_model.pkl")
@@ -18,16 +22,14 @@ META_PATH = os.path.join("models", "meta.json")
 
 # Load model & metadata
 model = joblib.load(MODEL_PATH)
-
 with open(META_PATH, "r") as f:
     meta = json.load(f)
 
 chipset_list = meta.get("chipset_list", [])
 resolution_list = meta.get("resolution_list", ["720p", "1080p", "2k+"])
 label_mapping = meta.get("label_mapping", {})
-label_map = {int(k): v for k, v in label_mapping.items()}  # pastikan int untuk key
+label_map = {int(k): v for k, v in label_mapping.items()}
 
-# Fungsi skor chipset
 def chipset_score(chipset: str) -> int:
     chipset = chipset.lower()
     if 'snapdragon 8 gen 3' in chipset:
@@ -75,16 +77,8 @@ def chipset_score(chipset: str) -> int:
     else:
         return 400
 
-# Konversi resolusi ke nilai numerik
 def resolution_to_value(res_str: str) -> int:
-    if res_str == "720p":
-        return 720
-    elif res_str == "1080p":
-        return 1080
-    elif res_str == "2k+":
-        return 2000
-    else:
-        return 720
+    return {"720p": 720, "1080p": 1080, "2k+": 2000}.get(res_str, 720)
 
 @app.get("/", response_class=HTMLResponse)
 def form_get(request: Request):
@@ -120,7 +114,6 @@ def form_post(
         chipset_val = chipset_score(chipset)
 
         input_data = np.array([[ram, storage, display_res_value, chipset_val]])
-
         prediction = model.predict(input_data)[0]
         prediction_label = label_map.get(int(prediction), "Unknown")
 

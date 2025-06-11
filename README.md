@@ -61,6 +61,13 @@ These instructions will help you set up the project locally and run it manually.
    uvicorn app.main:app --reload
    ```
 
+3. Running the mlflow locally
+   ```sh
+   a.  pip install mlflow
+
+   b. mlflow ui
+   ```
+
 3. Run via Railway
    ```sh
    a. Add new data into train.csv
@@ -97,6 +104,27 @@ These instructions will help you set up the project locally and run it manually.
 ├── README.md
 └── requirements.txt
 ```
+
+## Fixes and Changes
+
+1. Train the model locally
+   ```sh
+   python src/model.py
+   ```
+
+2. Running the web app locally
+   ```sh
+   uvicorn app.main:app --reload
+   ```
+
+3. Run via Railway
+   ```sh
+   a. Add new data into train.csv
+
+   b. Push the changes into your Github Repository
+
+
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
