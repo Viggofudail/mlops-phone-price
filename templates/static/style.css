@@ -1,0 +1,171 @@
+body {
+    background: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 100%) !important;
+    min-height: 100vh;
+    font-family: 'Poppins', Arial, Helvetica, sans-serif !important;
+  }
+  .card {
+    border-radius: 1.5rem;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    border: none;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .card:hover {
+    box-shadow: 0 12px 36px 0 rgba(31, 38, 135, 0.18);
+    transform: translateY(-2px) scale(1.012);
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .custom-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.5px;
+  }
+  .custom-header .icon {
+    font-size: 2.2rem;
+    color: #2563eb;
+  }
+  .btn-primary {
+    background: linear-gradient(90deg, #2563eb 0%, #38bdf8 100%);
+    border: none;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover {
+    background: linear-gradient(90deg, #1e40af 0%, #0ea5e9 100%);
+  }
+  .form-label {
+    font-weight: 500;
+    color: #2563eb;
+  }
+  .alert-success {
+    background: #e0f2fe;
+    color: #0369a1;
+    border: none;
+  }
+  .custom-header, h1, h2 {
+    font-family: 'Poppins', Arial, Helvetica, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .form-text {
+    font-weight: 400;
+    color: #6b7280;
+    font-size: 0.75rem;
+    opacity: 0.85;
+  }
+  .result-box {
+    background: #f1f5f9;
+    border-radius: 1rem;
+    padding: 1.2rem 1rem 1rem 1rem;
+    margin-top: 1.5rem;
+    box-shadow: 0 2px 8px 0 rgba(31, 38, 135, 0.06);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .result-label {
+    color: #2563eb;
+    font-weight: 500;
+    font-size: 1.1rem;
+    margin-bottom: 0.2rem;
+  }
+  .result-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+  }
+  .result-accuracy {
+    color: #64748b;
+    font-size: 1rem;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 2px #bae6fd;
+    background: #f0fdfa;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  }
+  .form-select {
+    padding: 0.6rem 2.2rem 0.6rem 1rem;
+    border-radius: 0.75rem;
+    border: 1.5px solid #dbeafe;
+    background: #f8fafc url("data:image/svg+xml,%3Csvg width='16' height='16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%23336dec' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 1rem center/1.2rem 1.2rem;
+    color: #0f172a;
+    font-size: 1rem;
+    box-shadow: 0 1px 4px 0 rgba(31,38,135,0.04);
+    appearance: none;
+    -webkit-appearance: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    max-height: 200px; /* Limit dropdown height */
+    overflow-y: auto;  /* Enable scroll if too many options */
+  }
+
+.form-select:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px #bae6fd;
+  background-color: #f0fdfa;
+  outline: none;
+}
+.form-select option {
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+/* Improve spacing and readability for Choices.js dropdown options */
+.choices__list--dropdown .choices__item {
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  white-space: normal !important; /* Allow text to wrap */
+  word-break: break-word;         /* Break long words if needed */
+  max-width: 320px;               /* Optional: set a max width */
+}
+
+.choices__list--dropdown {
+  min-width: 220px;               /* Optional: make dropdown wider */
+  max-width: 350px;               /* Optional: prevent too wide */
+}
+
+/* Glassmorphism effect for Choices.js dropdown */
+.choices__list--dropdown {
+  background: rgba(255, 255, 255, 0.35) !important;
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-radius: 1rem !important;
+  border: 1px solid rgba(200, 200, 255, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+  min-width: 220px;
+  max-width: 350px;
+  padding: 0.5rem 0;
+  overflow: auto !important;      /* Add scroll if too tall */
+  max-height: 260px !important;   /* Limit dropdown height */
+}
+
+.choices__list--dropdown .choices__item {
+  background: transparent !important;
+  color: #0f172a;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  white-space: normal !important;
+  word-break: break-word;
+  border-radius: 1rem !important; /* Match dropdown rounding */
+  transition: background 0.15s;
+  max-width: 320px;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+}
+
+/* Highlight on hover */
+.choices__list--dropdown .choices__item--selectable.is-highlighted,
+.choices__list--dropdown .choices__item--selectable:hover {
+  background: rgba(56, 189, 248, 0.18) !important;
+  color: #2563eb;
+}

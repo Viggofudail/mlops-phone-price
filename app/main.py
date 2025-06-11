@@ -1,31 +1,38 @@
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 import joblib
 import os
 import numpy as np
 import json
 
-app = FastAPI()
-templates = Jinja2Templates(directory="templates")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, "..", "templates", "static")
+TEMPLATE_DIR = os.path.join(BASE_DIR, "..", "templates")
 
-# Paths
+app = FastAPI()
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+templates = Jinja2Templates(directory=TEMPLATE_DIR)
+
+# Path file model dan metadata
 MODEL_PATH = os.path.join("models", "price_range_model.pkl")
 ACCURACY_PATH = os.path.join("models", "accuracy.txt")
 META_PATH = os.path.join("models", "meta.json")
 
 # Load model & metadata
 model = joblib.load(MODEL_PATH)
-
 with open(META_PATH, "r") as f:
     meta = json.load(f)
 
 chipset_list = meta.get("chipset_list", [])
 resolution_list = meta.get("resolution_list", ["720p", "1080p", "2k+"])
 label_mapping = meta.get("label_mapping", {})
-label_map = {int(k): v for k, v in label_mapping.items()}  # pastikan int untuk key
+label_map = {int(k): v for k, v in label_mapping.items()}
 
-# Fungsi skor chipset
+
+# Konversi nama chipset menjadi skor numerik
 def chipset_score(chipset: str) -> int:
     chipset = chipset.lower()
     if 'snapdragon 8 gen 3' in chipset:
@@ -73,17 +80,17 @@ def chipset_score(chipset: str) -> int:
     else:
         return 400
 
-# Konversi resolusi ke nilai numerik
-def resolution_to_value(res_str: str) -> int:
-    if res_str == "720p":
-        return 720
-    elif res_str == "1080p":
-        return 1080
-    elif res_str == "2k+":
-        return 2000
-    else:
-        return 720
 
+# Konversi resolusi menjadi angka
+def resolution_to_value(res_str: str) -> int:
+    return {
+        "720p": 720,
+        "1080p": 1080,
+        "2k+": 2000
+    }.get(res_str, 720)  # Default 720 jika tidak cocok
+
+
+# Tampilan awal (GET)
 @app.get("/", response_class=HTMLResponse)
 def form_get(request: Request):
     acc = None
@@ -92,6 +99,7 @@ def form_get(request: Request):
             acc = round(float(f.read()) * 100, 2)
     except:
         acc = None
+
     return templates.TemplateResponse("index.html", {
         "request": request,
         "prediction": None,
@@ -105,6 +113,8 @@ def form_get(request: Request):
         "storage": None
     })
 
+
+# Proses prediksi (POST)
 @app.post("/", response_class=HTMLResponse)
 def form_post(
     request: Request,
@@ -114,23 +124,16 @@ def form_post(
     chipset: str = Form(...)
 ):
     try:
+        # Ubah input menjadi bentuk numerik
         display_res_value = resolution_to_value(display_resolution)
         chipset_val = chipset_score(chipset)
 
-        # Fitur mentah sebelum ke model pipeline
-        input_features_raw = np.array([[ram, storage, display_res_value, chipset_val]])
-        print(f"DEBUG: Input Features (Raw for Pipeline): {input_features_raw}")
+        # Siapkan input untuk model
+        input_data = np.array([[ram, storage, display_res_value, chipset_val]])
+        prediction = model.predict(input_data)[0]
+        prediction_label = label_map.get(int(prediction), "Unknown")
 
-        prediction_numeric = model.predict(input_features_raw)[0]
-        print(f"DEBUG: Raw Numeric Prediction from Model: {prediction_numeric}")
-        
-        if hasattr(model, "predict_proba"):
-            probabilities = model.predict_proba(input_features_raw)[0]
-            print(f"DEBUG: Prediction Probabilities: {probabilities}")
-
-        prediction_label = label_map.get(int(prediction_numeric), "Unknown")
-        print(f"DEBUG: Predicted Label: {prediction_label}")
-
+        # Ambil akurasi
         with open(ACCURACY_PATH, "r") as f:
             acc = round(float(f.read()) * 100, 2)
 
@@ -146,6 +149,7 @@ def form_post(
             "ram": ram,
             "storage": storage
         })
+
     except Exception as e:
         return templates.TemplateResponse("index.html", {
             "request": request,
