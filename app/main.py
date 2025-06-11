@@ -9,11 +9,8 @@ import json
 
 app = FastAPI()
 
-# Mount static files (CSS, JS, dll)
-app.mount("/static", StaticFiles(directory="templates/static"), name="static")
-
-# Set folder templates Jinja2
-templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="../templates/static"), name="static")
+templates = Jinja2Templates(directory="../templates")
 
 # Path file model dan metadata
 MODEL_PATH = os.path.join("models", "price_range_model.pkl")
