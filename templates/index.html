@@ -58,10 +58,10 @@
       </div>
     </form>
     {% if prediction %}
-    <div class="alert alert-success mt-4 text-center fs-5">
-      <strong>Prediksi:</strong>
-      <span class="badge bg-success fs-5">{{ prediction }}</span><br>
-      <strong>Akurasi Model:</strong> {{ accuracy }}%
+    <div class="result-box mt-4 text-center">
+      <div class="result-label">Prediksi:</div>
+      <div class="result-value">{{ prediction }}</div>
+      <div class="result-accuracy">Akurasi Model: <b>{{ accuracy }}%</b></div>
     </div>
     {% elif error %}
     <div class="alert alert-danger mt-4 text-center">

@@ -8,6 +8,11 @@ body {
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
     border: none;
   }
+  .card:hover {
+    box-shadow: 0 12px 36px 0 rgba(31, 38, 135, 0.18);
+    transform: translateY(-2px) scale(1.012);
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
   .custom-header {
     display: flex;
     align-items: center;
@@ -51,4 +56,38 @@ body {
     color: #6b7280;
     font-size: 0.75rem;
     opacity: 0.85;
+  }
+  .result-box {
+    background: #f1f5f9;
+    border-radius: 1rem;
+    padding: 1.2rem 1rem 1rem 1rem;
+    margin-top: 1.5rem;
+    box-shadow: 0 2px 8px 0 rgba(31, 38, 135, 0.06);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .result-label {
+    color: #2563eb;
+    font-weight: 500;
+    font-size: 1.1rem;
+    margin-bottom: 0.2rem;
+  }
+  .result-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+  }
+  .result-accuracy {
+    color: #64748b;
+    font-size: 1rem;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 2px #bae6fd;
+    background: #f0fdfa;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
   }
