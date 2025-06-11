@@ -4,7 +4,8 @@ import os
 import json
 import joblib
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+# PERUBAHAN: Tambahkan f1_score
+from sklearn.metrics import accuracy_score, f1_score
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from xgboost import XGBClassifier
@@ -12,6 +13,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 import mlflow
 import mlflow.sklearn
+# PERUBAHAN: Tambahkan SMOTE
+from imblearn.over_sampling import SMOTE
 
 DATA_PATH = os.path.join("data", "raw", "train.csv")
 MODEL_DIR = "models"
@@ -92,15 +95,34 @@ def train():
     X, y = preprocess_data(df)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    print("Distribusi kelas di y_train SEBELUM SMOTE (proporsi):")
+    print(y_train.value_counts(normalize=True))
+    
+    if len(y_train.value_counts()) > 1 and not y_train.empty:
+        try:
+            smote = SMOTE(random_state=42)
+            X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
+            print("\nDistribusi kelas di y_train SETELAH SMOTE (proporsi):")
+            print(y_train_resampled.value_counts(normalize=True))
+        except ValueError as e:
+            print(f"\nError saat menerapkan SMOTE: {e}. Menggunakan data training asli.")
+            X_train_resampled, y_train_resampled = X_train, y_train
+    else:
+        print("\nTidak menerapkan SMOTE (y_train kosong atau hanya 1 kelas). Menggunakan data training asli.")
+        X_train_resampled, y_train_resampled = X_train, y_train
+
+
+    print("-" * 30)
 
     models = {
         "RandomForest": Pipeline([
             ("scaler", StandardScaler()),
-            ("clf", RandomForestClassifier(random_state=42))
+            ("clf", RandomForestClassifier(random_state=42, class_weight='balanced'))
         ]),
         "SVM": Pipeline([
             ("scaler", StandardScaler()),
-            ("clf", SVC(probability=True))
+            ("clf", SVC(probability=True, class_weight='balanced', random_state=42))
         ]),
         "XGBoost": Pipeline([
             ("scaler", StandardScaler()),
@@ -108,44 +130,52 @@ def train():
         ])
     }
 
-    best_score = 0
+    best_f1_score = 0
     best_model = None
     best_name = ""
 
     mlflow.set_experiment("PhonePricePrediction")
 
-    for name, model in models.items():
+    for name, model_pipeline in models.items():
         with mlflow.start_run(run_name=name):
-            model.fit(X_train, y_train)
-            preds = model.predict(X_test)
+            model_pipeline.fit(X_train_resampled, y_train_resampled)
+            preds = model_pipeline.predict(X_test)
+            
             acc = accuracy_score(y_test, preds)
+            f1 = f1_score(y_test, preds, average='weighted')
+            
             mlflow.log_param("model_name", name)
             mlflow.log_metric("accuracy", acc)
+            mlflow.log_metric("f1_score_weighted", f1)
 
-            if acc > best_score:
-                best_score = acc
-                best_model = model
+            print(f"Model: {name}, Accuracy: {acc:.4f}, F1-score (weighted): {f1:.4f}")
+
+            if f1 > best_f1_score:
+                best_f1_score = f1
+                best_model = model_pipeline
                 best_name = name
 
     # Simpan model terbaik
     joblib.dump(best_model, os.path.join(MODEL_DIR, "price_range_model.pkl"))
 
-    # Simpan akurasi
+    # Simpan skor terbaik (sekarang F1 score)
     with open(os.path.join(MODEL_DIR, "accuracy.txt"), "w") as f:
-        f.write(str(best_score))
+        f.write(str(best_f1_score))
 
     # Simpan metadata
     meta = {
         "chipset_list": sorted(df['chipset'].dropna().unique().tolist()),
         "resolution_list": ["720p", "1080p", "2k+"],
-        "best_model": best_name,
+        "best_model_name": best_name,
+        "best_model_metric_score": best_f1_score,
+        "metric_used": "f1_score_weighted", 
         "label_mapping": inverse_mapping
     }
 
     with open(os.path.join(MODEL_DIR, "meta.json"), "w") as f:
         json.dump(meta, f, indent=4)
 
-    print(f"Training selesai. Model terbaik: {best_name} (akurasi: {best_score:.2f})")
+    print(f"Training selesai. Model terbaik: {best_name} (F1-score weighted: {best_f1_score:.4f})")
 
 if __name__ == "__main__":
     train()

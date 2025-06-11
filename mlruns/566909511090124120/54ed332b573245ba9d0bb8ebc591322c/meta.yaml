@@ -1,0 +1,14 @@
+artifact_uri: file:///D:/Tugas/Kuliah/PSO/mlops-phone-price/mlruns/566909511090124120/54ed332b573245ba9d0bb8ebc591322c/artifacts
+end_time: 1749656823450
+entry_point_name: ''
+experiment_id: '566909511090124120'
+lifecycle_stage: active
+run_id: 54ed332b573245ba9d0bb8ebc591322c
+run_name: XGBoost
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1749656823101
+status: 3
+tags: []
+user_id: User

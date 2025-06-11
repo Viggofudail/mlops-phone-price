@@ -163,7 +163,9 @@
         "1080p",
         "2k+"
     ],
-    "best_model": "XGBoost",
+    "best_model_name": "RandomForest",
+    "best_model_metric_score": 0.7075721450200089,
+    "metric_used": "f1_score_weighted",
     "label_mapping": {
         "0": "medium price",
         "1": "high price",

@@ -117,10 +117,19 @@ def form_post(
         display_res_value = resolution_to_value(display_resolution)
         chipset_val = chipset_score(chipset)
 
-        input_data = np.array([[ram, storage, display_res_value, chipset_val]])
+        # Fitur mentah sebelum ke model pipeline
+        input_features_raw = np.array([[ram, storage, display_res_value, chipset_val]])
+        print(f"DEBUG: Input Features (Raw for Pipeline): {input_features_raw}")
 
-        prediction = model.predict(input_data)[0]
-        prediction_label = label_map.get(int(prediction), "Unknown")
+        prediction_numeric = model.predict(input_features_raw)[0]
+        print(f"DEBUG: Raw Numeric Prediction from Model: {prediction_numeric}")
+        
+        if hasattr(model, "predict_proba"):
+            probabilities = model.predict_proba(input_features_raw)[0]
+            print(f"DEBUG: Prediction Probabilities: {probabilities}")
+
+        prediction_label = label_map.get(int(prediction_numeric), "Unknown")
+        print(f"DEBUG: Predicted Label: {prediction_label}")
 
         with open(ACCURACY_PATH, "r") as f:
             acc = round(float(f.read()) * 100, 2)
