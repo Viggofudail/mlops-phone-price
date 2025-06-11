@@ -1,6 +1,7 @@
 body {
     background: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 100%) !important;
     min-height: 100vh;
+    font-family: 'Poppins', Arial, Helvetica, sans-serif !important;
   }
   .card {
     border-radius: 1.5rem;
@@ -39,4 +40,9 @@ body {
     background: #e0f2fe;
     color: #0369a1;
     border: none;
+  }
+  .custom-header, h1, h2 {
+    font-family: 'Poppins', Arial, Helvetica, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.5px;
   }
