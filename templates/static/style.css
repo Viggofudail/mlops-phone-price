@@ -132,3 +132,40 @@ body {
   min-width: 220px;               /* Optional: make dropdown wider */
   max-width: 350px;               /* Optional: prevent too wide */
 }
+
+/* Glassmorphism effect for Choices.js dropdown */
+.choices__list--dropdown {
+  background: rgba(255, 255, 255, 0.35) !important;
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-radius: 1rem !important;
+  border: 1px solid rgba(200, 200, 255, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+  min-width: 220px;
+  max-width: 350px;
+  padding: 0.5rem 0;
+  overflow: auto !important;      /* Add scroll if too tall */
+  max-height: 260px !important;   /* Limit dropdown height */
+}
+
+.choices__list--dropdown .choices__item {
+  background: transparent !important;
+  color: #0f172a;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  white-space: normal !important;
+  word-break: break-word;
+  border-radius: 1rem !important; /* Match dropdown rounding */
+  transition: background 0.15s;
+  max-width: 320px;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+}
+
+/* Highlight on hover */
+.choices__list--dropdown .choices__item--selectable.is-highlighted,
+.choices__list--dropdown .choices__item--selectable:hover {
+  background: rgba(56, 189, 248, 0.18) !important;
+  color: #2563eb;
+}
