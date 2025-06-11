@@ -9,10 +9,12 @@ import json
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
+# Paths
 MODEL_PATH = os.path.join("models", "price_range_model.pkl")
 ACCURACY_PATH = os.path.join("models", "accuracy.txt")
 META_PATH = os.path.join("models", "meta.json")
 
+# Load model & metadata
 model = joblib.load(MODEL_PATH)
 
 with open(META_PATH, "r") as f:
@@ -20,8 +22,10 @@ with open(META_PATH, "r") as f:
 
 chipset_list = meta.get("chipset_list", [])
 resolution_list = meta.get("resolution_list", ["720p", "1080p", "2k+"])
+label_mapping = meta.get("label_mapping", {})
+label_map = {int(k): v for k, v in label_mapping.items()}  # pastikan int untuk key
 
-
+# Fungsi skor chipset
 def chipset_score(chipset: str) -> int:
     chipset = chipset.lower()
     if 'snapdragon 8 gen 3' in chipset:
@@ -69,9 +73,8 @@ def chipset_score(chipset: str) -> int:
     else:
         return 400
 
-
+# Konversi resolusi ke nilai numerik
 def resolution_to_value(res_str: str) -> int:
-    # Mapping string resolution like "720p", "1080p", "2k+" to integer category
     if res_str == "720p":
         return 720
     elif res_str == "1080p":
@@ -79,9 +82,7 @@ def resolution_to_value(res_str: str) -> int:
     elif res_str == "2k+":
         return 2000
     else:
-        # Default fallback (sama seperti pelatihan)
         return 720
-
 
 @app.get("/", response_class=HTMLResponse)
 def form_get(request: Request):
@@ -104,7 +105,6 @@ def form_get(request: Request):
         "storage": None
     })
 
-
 @app.post("/", response_class=HTMLResponse)
 def form_post(
     request: Request,
@@ -118,26 +118,16 @@ def form_post(
         chipset_val = chipset_score(chipset)
 
         input_data = np.array([[ram, storage, display_res_value, chipset_val]])
-        
-        print(f"DEBUG: Input data to model: {input_data}")
 
         prediction = model.predict(input_data)[0]
-
-        print(f"DEBUG: Raw prediction from model: {prediction}")
-
-        label_map = {
-            0: "Low Cost",
-            1: "Medium Cost",
-            2: "High Cost",
-            3: "Very High Cost"
-        }
+        prediction_label = label_map.get(int(prediction), "Unknown")
 
         with open(ACCURACY_PATH, "r") as f:
             acc = round(float(f.read()) * 100, 2)
 
         return templates.TemplateResponse("index.html", {
             "request": request,
-            "prediction": label_map.get(prediction, "Unknown"),
+            "prediction": prediction_label,
             "error": None,
             "accuracy": acc,
             "chipset_list": chipset_list,
