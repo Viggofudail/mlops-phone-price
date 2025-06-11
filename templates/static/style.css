@@ -1,5 +1,5 @@
-  body {
-    background: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 100%);
+body {
+    background: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 100%) !important;
     min-height: 100vh;
   }
   .card {
