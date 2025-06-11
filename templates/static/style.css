@@ -103,6 +103,8 @@ body {
     appearance: none;
     -webkit-appearance: none;
     transition: border-color 0.2s, box-shadow 0.2s;
+    max-height: 200px; /* Limit dropdown height */
+    overflow-y: auto;  /* Enable scroll if too many options */
   }
 
 .form-select:focus {
@@ -110,4 +112,23 @@ body {
   box-shadow: 0 0 0 2px #bae6fd;
   background-color: #f0fdfa;
   outline: none;
+}
+.form-select option {
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+/* Improve spacing and readability for Choices.js dropdown options */
+.choices__list--dropdown .choices__item {
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  white-space: normal !important; /* Allow text to wrap */
+  word-break: break-word;         /* Break long words if needed */
+  max-width: 320px;               /* Optional: set a max width */
+}
+
+.choices__list--dropdown {
+  min-width: 220px;               /* Optional: make dropdown wider */
+  max-width: 350px;               /* Optional: prevent too wide */
 }

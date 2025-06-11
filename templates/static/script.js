@@ -12,3 +12,15 @@ document.querySelector("form").addEventListener("submit", function() {
   document.getElementById("submitBtn").disabled = true;
   document.getElementById("loadingSpinner").classList.remove("d-none");
 });
+
+// Add this after your page loads
+const element = document.querySelector('.form-select');
+const choices = new Choices(element, {
+  searchEnabled: true,
+  shouldSort: false,
+  position: 'bottom', // or 'top'
+  maxItemCount: 1,
+  classNames: {
+    containerOuter: 'choices form-select'
+  }
+});
