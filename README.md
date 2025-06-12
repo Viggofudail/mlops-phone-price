@@ -53,7 +53,7 @@ These instructions will help you set up the project locally and run it manually.
 
 1. Train the model locally
    ```sh
-   python src/model.py
+   python src/train_model.py
    ```
 
 2. Running the web app locally
