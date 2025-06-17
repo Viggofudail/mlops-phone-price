@@ -8,12 +8,13 @@ import numpy as np
 import json
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-STATIC_DIR = os.path.join(BASE_DIR, "..", "templates", "static")
 TEMPLATE_DIR = os.path.join(BASE_DIR, "..", "templates")
 
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+ASSETS_DIR = os.path.join(os.path.dirname(__file__), '..', 'assets')
+app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
+
 templates = Jinja2Templates(directory=TEMPLATE_DIR)
 
 # Path file model dan metadata

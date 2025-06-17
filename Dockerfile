@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+docker build --no-cache -t mlops-phone-price .FROM python:3.10-slim
 
 WORKDIR /app
 
